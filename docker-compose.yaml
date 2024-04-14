@@ -16,7 +16,7 @@ services:
       - mongodb_network
     image: mongo:7.0.8-jammy
     env_file:
-      - ./docker-cmopose.env
+      - ./docker-compose.env
     volumes:
       - mongodb_data:/data/db
 
