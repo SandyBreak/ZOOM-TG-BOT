@@ -75,10 +75,10 @@ async def get_date(message: types.Message, state: FSMContext) -> None:
     else:
       try:
           response = await control.checking_the_date_for_accuracy(message.text)
-          illegal_intevals = await control.get_available_time_for_meeting(response)
-          await message.answer("Теперь выберите время начала. Ниже в сообщении могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intevals))
-          if illegal_intevals:
-          	for start, end in illegal_intevals:
+          illegal_intervals = await control.get_available_time_for_meeting(response)
+          await message.answer("Теперь выберите время начала. Ниже в сообщении могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intervals))
+          if illegal_intervals:
+          	for start, end in illegal_intervals:
                     await message.answer(f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}")
           await state.set_state(CreateMeetingStates.get_start_time.state)  
 
@@ -122,8 +122,8 @@ async def get_duration_meeting(message: types.Message, state: FSMContext) -> Non
     keyboard = Keyboards(message.from_user.id)
     if message.text == "Вернуться назад":
         entered_date = await db.get_data(message.from_user.id, 'date')
-        illegal_intevals = await db.get_data(message.from_user.id, 'illegal_intevals')
-        await message.answer("Теперь выберите время начала. Ниже могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intevals))
+        illegal_intervals = await db.get_data(message.from_user.id, 'illegal_intervals')
+        await message.answer("Теперь выберите время начала. Ниже могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intervals))
         await state.set_state(CreateMeetingStates.get_start_time.state)
     else:
         try:
