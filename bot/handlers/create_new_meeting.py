@@ -176,6 +176,7 @@ async def get_name_create_meeting(message: types.Message,state: FSMContext) -> N
             answer = await create_and_get_meeting_link(account, meeting_data[0])
             await message.answer(f"Конференция создана:\nCсылка для организатора {answer[0]}", disable_web_page_preview=True)
             await message.answer(f"Пригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
+            await state.finish()
         except CreateMeetingError:
           await message.answer("Неудалось создать конференцию, обратитесь в техническую поддержку")
           await state.finish()

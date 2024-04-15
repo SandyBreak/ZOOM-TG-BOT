@@ -85,6 +85,7 @@ async def get_date_and_get_planned_meetings(message: types.Message, state: FSMCo
                 await state.finish()
         except GetListMeetingError:
              await message.answer("Неудалось получить список конференций, обратитесь в техническую поддержку")
+             await state.finish()
     
     except DataInputError:
       await message.answer("Кажется вы ввели данные в неправильном формате, попробуйте еще раз!")
