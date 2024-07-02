@@ -71,14 +71,15 @@ class Keyboards:
 
                 keyboard.row(*buttons)
                 buttons = []
-
+    
             if day.month != current_month:
                 if buttons:  # Проверка на пустой список
                     buttons.pop()
 
-            if len(buttons) != 7 and len(buttons) != 0:
-                for a in range(0, 7 - len(buttons)):
-                    buttons.append("----")
+                if len(buttons) != 7 and len(buttons) != 0:
+
+                    for a in range(0, 7 - len(buttons)):
+                        buttons.append("----")
 
                 keyboard.row(*buttons)
                 keyboard.add(day.strftime('%B'))
@@ -94,6 +95,7 @@ class Keyboards:
         keyboard.add("Ввести другое значение")
 
         return keyboard
+
 
 
     async def start_time_keyboard(self, no_access_intervals: dict) -> types.ReplyKeyboardMarkup:
