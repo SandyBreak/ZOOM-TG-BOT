@@ -53,14 +53,15 @@ async def main():
   helper = MinorOperations()
   bot = Bot(token=await helper.get_token())
   dp = Dispatcher(bot, storage=MemoryStorage())
-  dp.middleware.setup(LoggingMiddleware())
   
-	#Регистрация команд и обработчиков событий
+  logging.basicConfig(level=logging.INFO)
+	
+  #Регистрация команд и обработчиков событий
   await set_commands(bot)
   await register_handlers_commands(dp)
   await register_handlers_create_meeting(dp)
   await register_handlers_get_planned_meetings(dp)
-  await dp.skip_updates()
+  #await dp.skip_updates()
   print('Bot STARTED')
   await dp.start_polling()
 
