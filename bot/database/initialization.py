@@ -58,10 +58,10 @@ class Initialization:
 		delete_data = {'$set': {'users.$.date': '', 'users.$.choosen_zoom': 0, 'users.$.start_time': '', 'users.$.duration_meeting': 0, 'users.$.autorecord_flag': '', 'users.$.illegal_intervals': []}}
 
 		await db.update_data(filter_by_id, delete_data)
-	async def update_data_about_created_conferences(self, current_date) -> None:
+	async def update_data_about_created_conferences(self, tg_addr, current_date) -> None:
 		document = await db.find_data({"_id": ObjectId("65f7110e4e9a3762bba43801")})
 		new_meeting = {
-			"creator": self.user_id,
+			"creator": tg_addr,
 			"date_of_creation": current_date
 		}
 		update = {'$push': {'created_meetings': new_meeting}}

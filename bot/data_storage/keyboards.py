@@ -73,8 +73,8 @@ class Keyboards:
                 buttons = []
 
             if day.month != current_month:
-            if buttons:  # Проверка на пустой список
-                buttons.pop()
+                if buttons:  # Проверка на пустой список
+                    buttons.pop()
 
             if len(buttons) != 7 and len(buttons) != 0:
                 for a in range(0, 7 - len(buttons)):
