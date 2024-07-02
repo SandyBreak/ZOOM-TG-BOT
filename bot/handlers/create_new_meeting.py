@@ -177,7 +177,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
             #await message.answer(f"Конференция создана:\nCсылка для организатора {answer[0]}", disable_web_page_preview=True)
             await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
             await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
-            await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {meeting_data[0].start_time.strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
+            #await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {meeting_data[0].start_time.strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
             await state.finish()
         except CreateMeetingError:
           await message.answer("Неудалось создать конференцию, обратитесь в техническую поддержку")
