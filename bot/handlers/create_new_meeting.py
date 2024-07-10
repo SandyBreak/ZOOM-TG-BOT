@@ -204,7 +204,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info('OK5')
             except exceptions.BadRequest as e:
                 logging.error(f"Ошибка BadRequest: {e}")
-                if e.message == 'Peer_flood':
+                if 'Peer_flood' in e:
                     await message.answer("Извините, слишком быстро отправляю сообщения. Попробуйте позже.")
                 else:
                     raise e
