@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from datetime import datetime, timedelta
 import logging
 import asyncio
-from aiogram.utils.exceptions import *
+from aiogram.utils import exceptions
 from data_storage.data_storage_classes import CreateMeetingStates
 from helper_classes.assistant import MinorOperations
 from database.initialization import Initialization
@@ -183,10 +183,6 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 text1 = (
                     f"Конференция создана:\nНазвание: {meeting_data[0].topic}\n"
                     f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}"
-                    f"Продолжительность: {meeting_data[0].duration} минут\n\n"
-                    f"Пригласительная ссылка: {answer[1]}"
-                    f"Идентификатор конференции: {answer[2]}\n"
-                    f"Код доступа: {meeting_data[1]}"
                 )
                 await message.answer(text1, disable_web_page_preview=True)
                 await asyncio.sleep(1)
