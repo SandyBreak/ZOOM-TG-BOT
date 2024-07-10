@@ -3,7 +3,8 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from datetime import datetime, timedelta
-
+import logging
+from aiogram.utils.exceptions import *
 from data_storage.data_storage_classes import CreateMeetingStates
 from helper_classes.assistant import MinorOperations
 from database.initialization import Initialization
@@ -172,20 +173,36 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
         meeting_data = await helper.fill_meeting_data_credits(message.from_user.id, message.text)
         account = await helper.fill_account_credits(message.from_user.id)
         try:
-            user = Initialization(message.from_user.id)
-            answer = await create_and_get_meeting_link(account, meeting_data[0])
+            try:
+                logging.info('OK1')
+                user = Initialization(message.from_user.id)
+                logging.info('OK2')
+                answer = await create_and_get_meeting_link(account, meeting_data[0])
+                logging.info('OK3')
+                text = (
+                    f"Конференция создана:\nНазвание: {meeting_data[0].topic}\n"
+                    f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\n"
+                    f"Продолжительность: {meeting_data[0].duration} минут\n\n"
+                    f"Пригласительная ссылка: {answer[1]}\n"
+                    f"Идентификатор конференции: {answer[2]}\n"
+                    f"Код доступа: {meeting_data[1]}"
+                )
+                logging.info('OK4')
+                await message.answer(text, disable_web_page_preview=True)
+                logging.info('OK5')
+                await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
+                logging.info('OK6')
+                await message.answer(text, disable_web_page_preview=True)
+                logging.info('OK7')
+            except aiogram.utils.exceptions.BadRequest as e:
+                logging.error(f"Ошибка BadRequest: {e}")
+                if e.message == 'Peer_flood':
+                    await message.answer("Извините, слишком быстро отправляю сообщения. Попробуйте позже.")
+                else:
+                    raise e
+
             #await message.answer(f"Конференция создана:\nCсылка для организатора {answer[0]}", disable_web_page_preview=True)
-            text = (
-                f"Конференция создана:\nНазвание: {meeting_data[0].topic}\n"
-                f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\n"
-                f"Продолжительность: {meeting_data[0].duration} минут\n\n"
-                f"Пригласительная ссылка: {answer[1]}\n"
-                f"Идентификатор конференции: {answer[2]}\n"
-                f"Код доступа: {meeting_data[1]}"
-            )
-            await message.answer(text, disable_web_page_preview=True)
             #await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
-            await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
             #await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {meeting_data[0].start_time.strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
             await state.finish()
         except CreateMeetingError:
