@@ -182,7 +182,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info('OK3')
                 text1 = (
                     f"Конференция создана:\nНазвание: {meeting_data[0].topic}\n"
-                    f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПригласительная ссылка: {answer[1]}"
+                    f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}"
                 )
                 await message.answer(text1, disable_web_page_preview=True)
                 await asyncio.sleep(1)
@@ -190,7 +190,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info(answer[1])
                 text2 = (
                     f"Продолжительность: {meeting_data[0].duration} минут\n\n"
-                    f"Пригласительная ссылка: {answer[1]}"
+                    #f"Пригласительная ссылка: {answer[1]}"
                 )
                 await message.answer(text2, disable_web_page_preview=True)
                 await asyncio.sleep(1)
@@ -204,8 +204,8 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info('OK6')
                 await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
                 logging.info('OK7')
-            except exceptions.BadRequest as e:
-                logging.error(f"Ошибка BadRequest: {e}")
+            except Exception as e:
+                logging.error(f"Ошибка: {e}")
                 #if 'Peer_flood' in e:
                 #    await message.answer("Извините, слишком быстро отправляю сообщения. Попробуйте позже.")
                 #else:
