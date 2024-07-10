@@ -39,7 +39,7 @@ async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: Meetin
 				shortener = pyshorteners.Shortener()
 				short_start_url = shortener.tinyurl.short(start_url)
 				short_join_url = shortener.tinyurl.short(join_url)
-				return start_url, short_join_url, meeting_id
+				return short_start_url, join_url, meeting_id
 		except Exception as e:
 			raise CreateMeetingError
 	else:
