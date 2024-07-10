@@ -190,7 +190,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info(answer[1])
                 text2 = (
                     f"Продолжительность: {meeting_data[0].duration} минут\n\n"
-                    #f"Пригласительная ссылка: {answer[1]}"
+                    f"Пригласительная ссылка: {answer[1]}"
                 )
                 await message.answer(text2, disable_web_page_preview=True)
                 await asyncio.sleep(1)
