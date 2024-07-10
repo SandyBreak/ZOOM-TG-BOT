@@ -186,22 +186,24 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 )
                 await message.answer(text1, disable_web_page_preview=True)
                 await asyncio.sleep(1)
-
+                logging.info('OK4')
+                logging.info(answer[1])
                 text2 = (
                     f"Продолжительность: {meeting_data[0].duration} минут\n\n"
                     f"Пригласительная ссылка: {answer[1]}"
                 )
                 await message.answer(text2, disable_web_page_preview=True)
                 await asyncio.sleep(1)
+                logging.info('OK5')
 
                 text3 = (
                     f"Идентификатор конференции: {answer[2]}\n"
                     f"Код доступа: {meeting_data[1]}"
                 )
                 await message.answer(text3, disable_web_page_preview=True)
-                logging.info('OK4')
+                logging.info('OK6')
                 await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
-                logging.info('OK5')
+                logging.info('OK7')
             except exceptions.BadRequest as e:
                 logging.error(f"Ошибка BadRequest: {e}")
                 #if 'Peer_flood' in e:
