@@ -202,7 +202,7 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
                 logging.info('OK4')
                 await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
                 logging.info('OK5')
-            except aiogram.utils.exceptions.BadRequest as e:
+            except exceptions.BadRequest as e:
                 logging.error(f"Ошибка BadRequest: {e}")
                 if e.message == 'Peer_flood':
                     await message.answer("Извините, слишком быстро отправляю сообщения. Попробуйте позже.")
