@@ -175,44 +175,12 @@ async def get_name_create_meeting(message: types.Message, state: FSMContext) -> 
         account = await helper.fill_account_credits(message.from_user.id)
         try:
             try:
-                logging.info('OK1')
                 user = Initialization(message.from_user.id)
-                logging.info('OK2')
                 answer = await create_and_get_meeting_link(account, meeting_data[0])
-                logging.info('OK3')
-                
-                #text1 = (
-                #    f"Конференция создана:\nНазвание: {meeting_data[0].topic}\n"
-                #    f"Дата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}"
-                #)
-                #await message.answer(text1, disable_web_page_preview=True)
-                #await asyncio.sleep(1)
-                #logging.info('OK4')
-                #logging.info(answer[1])
-                
-                #text2 = (
-                #    f"Продолжительность: {meeting_data[0].duration} минут\n\n"
-                #    f"Пригласительная ссылка: {answer[1]}"
-                #)
-                #await message.answer(text2, disable_web_page_preview=True)
-                #await asyncio.sleep(1)
-                #logging.info('OK5')
-                
-                #text3 = (
-                #    f"Идентификатор конференции: {answer[2]}\n"
-                #    f"Код доступа: {meeting_data[1]}"
-                #)
-                #await message.answer(text3, disable_web_page_preview=True)
-                #logging.info('OK6')
                 await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=types.ReplyKeyboardRemove(), disable_web_page_preview=True)
                 await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
-                logging.info('OK4')
             except Exception as e:
                 logging.error(f"Ошибка: {e}")
-                #if 'Peer_flood' in e:
-                #    await message.answer("Извините, слишком быстро отправляю сообщения. Попробуйте позже.")
-                #else:
-                #    raise e
 
             #await message.answer(f"Конференция создана:\nCсылка для организатора {answer[0]}", disable_web_page_preview=True)
             #await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {meeting_data[0].start_time.strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
