@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 
 from zoomus import ZoomClient
-import pyshorteners
+import logging
 
 
-from data_storage.data_storage_classes import ZoomAccount, MeetingData
+from data_storage.dataclasses import ZoomAccount, MeetingData
 from exceptions import CreateMeetingError, GetListMeetingError
 
 
@@ -12,9 +12,11 @@ async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: Meetin
 	"""
 	Создание конференции
 	"""
-	client = ZoomClient(account.client_id,
-											account.client_secret,
-											account.account_id)
+	client = ZoomClient(
+     	account.client_id,
+		account.client_secret,
+		account.account_id
+  )
 	response = client.meeting.create(
 		topic=meeting_data.topic,
 		type=meeting_data.type,
@@ -22,9 +24,9 @@ async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: Meetin
 		duration=meeting_data.duration,
 		password=meeting_data.password,
 		settings={
-      'password': meeting_data.password_required,
+  	    	'password': meeting_data.password_required,
 			'auto_recording': meeting_data.auto_recording
-    },
+    	},
 		user_id='me'
 	)
 
@@ -36,11 +38,9 @@ async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: Meetin
 			json_data = response.json()
 			start_url = json_data.get('start_url')
 			if start_url and join_url:
-				shortener = pyshorteners.Shortener()
-				short_start_url = shortener.tinyurl.short(start_url)
-				short_join_url = shortener.tinyurl.short(join_url)
-				return short_start_url, join_url, meeting_id
+				return 'short_start_url', join_url, meeting_id
 		except Exception as e:
+			logging.error(f"Error during create meeting: {e}")
 			raise CreateMeetingError
 	else:
 			raise CreateMeetingError
@@ -50,9 +50,11 @@ async def get_list_meeting(account: ZoomAccount, date:str)-> dict:
 	"""
 	Получение списка конференций для введенной даты
 	"""
-	client = ZoomClient(account.client_id,
-										 	account.client_secret,
-										 	account.account_id)
+	client = ZoomClient(
+    	account.client_id,
+		account.client_secret,
+		account.account_id
+	)
 	try:
 		response = client.meeting.list(user_id='me', type='upcoming', from_=date, to=date)
 		meeting_list = response.json()
