@@ -18,7 +18,9 @@ class Interaction:
 		"""
 		Строка подключения для запуска на сервере
 		"""
-		mongo_client = AsyncIOMotorClient(f'mongodb://{os.environ.get('MONGO_INITDB_ROOT_USERNAME')}:{os.environ.get('MONGO_INITDB_ROOT_PASSWORD')}@mongodb:27017')
+		login = os.environ.get('MONGO_INITDB_ROOT_USERNAME')
+		password = os.environ.get('MONGO_INITDB_ROOT_PASSWORD')
+		mongo_client = AsyncIOMotorClient(f'mongodb://{login}:{password}@mongodb:27017')
 		
 		self.__db = mongo_client['zoom_tg_bot']
 		self.__current_data = self.__db['general_info_about_user'] # Коллекция с данными
