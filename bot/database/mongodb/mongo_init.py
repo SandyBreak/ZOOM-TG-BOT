@@ -19,10 +19,10 @@ async def create_db():
 
         new_table = new_db["zoom_tg_bot"]
         
-        general_info_about_user = new_table['general_info_about_user'] #Коллекция с данными о пользователях
+        current_data_f_new_meeting = new_table['current_data_f_new_meeting'] #Коллекция с данными о пользователях
         users = obj = {"_id": ObjectId("65f7110e4e9a3762bba43801"), "users": []}
         
-        await general_info_about_user.insert_one(users)
+        await current_data_f_new_meeting.insert_one(users)
         
     except Exception as e:
         logging.error(f'Error during create DB: {e}')

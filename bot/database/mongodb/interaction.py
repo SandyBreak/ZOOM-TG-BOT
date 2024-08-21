@@ -23,7 +23,7 @@ class Interaction:
 		mongo_client = AsyncIOMotorClient(f'mongodb://{login}:{password}@mongodb:27017')
 		
 		self.__db = mongo_client['zoom_tg_bot']
-		self.__current_data = self.__db['general_info_about_user'] # Коллекция с данными
+		self.__current_data = self.__db['current_data_f_new_meeting'] # Коллекция с данными
 	
 	async def find_data(self, filter: dict) -> dict:
 
