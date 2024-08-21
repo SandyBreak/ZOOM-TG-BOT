@@ -4,7 +4,7 @@ from typing import Union
 from bson import ObjectId
 import logging
 #from helper_classes.assistant import MinorOperations
-
+import os
 
 
 #helper = MinorOperations()
@@ -14,11 +14,11 @@ class Interaction:
 		"""
 		Строка подключения для локального запуска
 		"""
-		mongo_client = AsyncIOMotorClient(f'mongodb://localhost:27017')
+		#mongo_client = AsyncIOMotorClient(f'mongodb://localhost:27017')
 		"""
 		Строка подключения для запуска на сервере
 		"""
-		#mongo_client = AsyncIOMotorClient(f'mongodb://{helper.get_mongo_login()}:{helper.get_mongo_password()}@mongodb:27017')
+		mongo_client = AsyncIOMotorClient(f'mongodb://{os.environ.get('MONGO_INITDB_ROOT_USERNAME')}:{os.environ.get('MONGO_INITDB_ROOT_PASSWORD')}@mongodb:27017')
 		
 		self.__db = mongo_client['zoom_tg_bot']
 		self.__current_data = self.__db['general_info_about_user'] # Коллекция с данными
