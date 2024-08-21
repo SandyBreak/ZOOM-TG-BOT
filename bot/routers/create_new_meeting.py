@@ -1,137 +1,105 @@
 # -*- coding: UTF-8 -*-
 
-from aiogram import Dispatcher, types
-from aiogram.dispatcher import FSMContext
+from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
 from datetime import datetime, timedelta
+from aiogram import Router, F, Bot
 import logging
-import asyncio
-from aiogram.utils import exceptions
-from data_storage.data_storage_classes import CreateMeetingStates
+
+
+from data_storage.states import CreateMeetingStates
 from helper_classes.assistant import MinorOperations
-from database.initialization import Initialization
-from database.interaction import Interaction
-from database.check_data import CheckData
-
-from data_storage.keyboards import  Keyboards
-
+from database.mongodb.interaction import Interaction
 from zoom_api.zoom import create_and_get_meeting_link
-
+from database.mongodb.check_data import CheckData
+from data_storage.keyboards import  Keyboards
 from exceptions import *
 
 
-
-async def register_handlers_create_meeting(dp: Dispatcher) -> None:
-    dp.register_message_handler(get_zoom, state=CreateMeetingStates.get_zoom)
-    dp.register_message_handler(get_date, state=CreateMeetingStates.get_date)
-    dp.register_message_handler(get_start_time, state=CreateMeetingStates.get_start_time)
-    dp.register_message_handler(get_duration_meeting, state=CreateMeetingStates.get_duration)
-    dp.register_message_handler(get_auto_recording, state=CreateMeetingStates.get_auto_recording)
-    dp.register_message_handler(get_name_create_meeting, state=CreateMeetingStates.get_name_create_meeting)
-
-
+mongodb_interface = Interaction()
 helper = MinorOperations()
-db = Interaction(
-	user= helper.get_login(),
-	password= helper.get_password()
-)
+bank_of_keys = Keyboards()
+router = Router()
+
+    
 
 
-async def start_create_new_meeting(message: types.Message, state: FSMContext) -> None:
+@router.message(Command(commands=['create', 'reset']))
+async def start_create_new_meeting(message: Message, state: FSMContext) -> None:
     """
     Инициализация пользователя
     """
-    await state.finish()
-    user = Initialization(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
-    await user.init_user()
-    await user.delete_user_meeting_data()
-    await message.answer("Выберите аккаунт zoom:", reply_markup=await keyboard.ultimate_keyboard('zoom'))
-    await state.set_state(CreateMeetingStates.get_zoom.state)
-
-
-async def get_zoom(message: types.Message, state: FSMContext) -> None:
-    """
-    Выбор зума для конференции
-    """
-    control = CheckData(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
-    try:
-      response = await control.check_zoom_for_accuracy(message.text)
-      await message.answer(f"Выбран zoom №{message.text}: {response}", reply_markup=types.ReplyKeyboardRemove())
-      await message.answer("Введите дату конференции:", reply_markup = await keyboard.calendar_keyboard())
-      await state.set_state(CreateMeetingStates.get_date.state)
-    except DataInputError:
-      await message.answer("Введены данные неправильного формата, пожалйста выберите zoom используя клавиатуру ниже" )
+    await state.clear()
+    await mongodb_interface.init_user(message.from_user.id, message.from_user.username, message.from_user.full_name)
+    await mongodb_interface.delete_user_meeting_data(message.from_user.id)
+    
+    calendar_keyboard = await bank_of_keys.calendar_keyboard()
+    await message.answer("Введите дату конференции:", reply_markup=calendar_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+    
+    await state.set_state(CreateMeetingStates.get_date)
 
 
 
-async def get_date(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text, StateFilter(CreateMeetingStates.get_date))
+async def get_date(message: Message, state: FSMContext) -> None:
     """
     Получение даты конференции
     """
-    control = CheckData(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
-    if message.text == "Вернуться назад":
-      await message.answer("Выберите аккаунт zoom:", reply_markup=await keyboard.ultimate_keyboard('zoom'))
-      await state.set_state(CreateMeetingStates.get_zoom.state)
-    else:
-      try:
-          response = await control.checking_the_date_for_accuracy(message.text)
-          illegal_intervals = await control.get_available_time_for_meeting(response)
-          await message.answer("Теперь выберите время начала. Ниже в сообщении могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intervals))
-          if illegal_intervals:
-          	for start, end in illegal_intervals:
-                    await message.answer(f"{start.strftime('%H:%M')}-{end.strftime('%H:%M')}")
-          await state.set_state(CreateMeetingStates.get_start_time.state)  
-
-      except DataInputError:
-          await message.answer("Кажется вы ввели данные в неправильном формате, попробуйте еще раз!")
-					
-					
-
+    try:
+        await message.answer("⏳ Ищу свободные временные интервалы...")
+        illegal_intervals = await CheckData(message.from_user.id).checking_the_date_for_accuracy(message.text)
+        start_time_keyboard = await bank_of_keys.start_time_keyboard(message.from_user.id, illegal_intervals)
+        await message.answer("Теперь выберите время начала конфренции:", reply_markup=start_time_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
             
-     
+        await state.set_state(CreateMeetingStates.get_start_time)  
+    except DataInputError:
+        await message.answer("Кажется вы ввели данные в неправильном формате, попробуйте еще раз!")
 
 
-async def get_start_time(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text, StateFilter(CreateMeetingStates.get_start_time))
+async def get_start_time(message: Message, state: FSMContext) -> None:
     """
     Получение времени начала конференции
     """
-    control = CheckData(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
+
     if message.text == "Вернуться назад":
-      await message.answer("Введите дату конференции:", reply_markup = await keyboard.calendar_keyboard())
-      await state.set_state(CreateMeetingStates.get_date.state)
+        calendar_keyboard = await bank_of_keys.calendar_keyboard()
+        await message.answer("Введите дату конференции:", reply_markup =calendar_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+        await state.set_state(CreateMeetingStates.get_date)
     else:
-      try:
-          response = await control.checking_the_start_time_for_accuracy(message.text)
-          await message.answer("Выберите продолжительность вашей конференции", reply_markup=await keyboard.duration_keyboard())
-          await state.set_state(CreateMeetingStates.get_duration.state)
-      except DataInputError:
-          await message.answer("Кажется вы ввели данные в неправильном формате, попробуйте еще раз!")
-      except HalfTimeInputError:
-         await message.answer("Началом конференции может являтся время которое кратно 30 минутам, напрмер 10:00 или 10:30")
-      except LongTimeInputError:
-          await message.answer("Ваше время начала пересекается с другой конференцией")
+        
+        try:
+            response = await CheckData(message.from_user.id).checking_the_start_time_for_accuracy(message.text)
+            duration_keyboard = await bank_of_keys.duration_keyboard(message.from_user.id)
+            await message.answer("Выберите продолжительность вашей конференции", reply_markup=duration_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+            await state.set_state(CreateMeetingStates.get_duration)
+        except DataInputError:
+            await message.answer("Кажется вы ввели данные в неправильном формате, попробуйте еще раз!")
+        except HalfTimeInputError:
+            await message.answer("Началом конференции может являтся время которое кратно 30 минутам, напрмер 10:00 или 10:30")
+        except LongTimeInputError:
+            await message.answer("Ваше время начала пересекается с другой конференцией")
 
 
-
-async def get_duration_meeting(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text, StateFilter(CreateMeetingStates.get_duration))
+async def get_duration_meeting(message: Message, state: FSMContext) -> None:
     """
     Получение продолжительности конференции
     """
-    control = CheckData(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
+
     if message.text == "Вернуться назад":
-        entered_date = await db.get_data(message.from_user.id, 'date')
-        illegal_intervals = await db.get_data(message.from_user.id, 'illegal_intervals')
-        await message.answer("Теперь выберите время начала. Ниже могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup= await keyboard.start_time_keyboard(illegal_intervals))
-        await state.set_state(CreateMeetingStates.get_start_time.state)
+        entered_date = await mongodb_interface.get_data(message.from_user.id, 'date')
+        illegal_intervals = await mongodb_interface.get_data(message.from_user.id, 'illegal_intervals')
+        start_time_keyboard = await bank_of_keys.start_time_keyboard(message.from_user.id, illegal_intervals)
+        await message.answer("Теперь выберите время начала. Ниже могут представлены недоступные вам временные интервалы уже запланированных конференций на введенную вами дату.", reply_markup=start_time_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+        await state.set_state(CreateMeetingStates.get_start_time)
     else:
         try:
-            await control.checking_the_duration_meeting_for_accuracy(message.text)
-            await message.answer("Вам нужно автоматически записывать вашу конференцию?:", reply_markup=await keyboard.ultimate_keyboard('record'))
-            await state.set_state(CreateMeetingStates.get_auto_recording.state)
+            record_keyboard = await bank_of_keys.ultimate_keyboard('record')
+            await CheckData(message.from_user.id).checking_the_duration_meeting_for_accuracy(message.text)
+            await message.answer("Вам нужно автоматически записывать вашу конференцию?:", reply_markup=record_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+            await state.set_state(CreateMeetingStates.get_auto_recording)
         except LongTimeInputError:
             await message.answer("Ваша конференция пересекается с другой, введите значение поменьше")
         except DataInputError:
@@ -140,51 +108,49 @@ async def get_duration_meeting(message: types.Message, state: FSMContext) -> Non
             await message.answer("Количество минут должно быть кратным 15")
 
 
-
-async def get_auto_recording(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text, StateFilter(CreateMeetingStates.get_auto_recording))
+async def get_auto_recording(message: Message, state: FSMContext) -> None:
     """
     Получение значения автоматической записи конференции
     """
-    control = CheckData(message.from_user.id)
-    keyboard = Keyboards(message.from_user.id)
+
     if message.text == "Вернуться назад":
-        await message.answer("Выберите продолжительность вашей конференции", reply_markup=await keyboard.duration_keyboard())
-        await state.set_state(CreateMeetingStates.get_duration.state)
+        duration_keyboard = await bank_of_keys.duration_keyboard(message.from_user.id)
+        await message.answer("Выберите продолжительность вашей конференции", reply_markup=duration_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+        await state.set_state(CreateMeetingStates.get_duration)
     else:
         try:
-            await control.check_record_for_accuracy(message.text)
-            await message.answer("Введите название вашей конференции:", reply_markup=await keyboard.ultimate_keyboard('back_to_record'))
-            await state.set_state(CreateMeetingStates.get_name_create_meeting.state)
+            await CheckData(message.from_user.id).check_record_for_accuracy(message.text)
+            back_to_record_keyboard = await bank_of_keys.ultimate_keyboard('back_to_record')
+            await message.answer("Введите название вашей конференции:", reply_markup=back_to_record_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+            await state.set_state(CreateMeetingStates.get_name_create_meeting)
         except DataInputError:
-             await message.answer("Пожалуйста дайте ответ, используя кнопки предложенной клавиатуры")
+            await message.answer("Пожалуйста дайте ответ, используя кнопки предложенной клавиатуры")
         
 
-            
-async def get_name_create_meeting(message: types.Message, state: FSMContext) -> None:
+@router.message(F.text, StateFilter(CreateMeetingStates.get_name_create_meeting))
+async def get_name_create_meeting(message: Message, state: FSMContext, bot: Bot) -> None:
     """
     Создание конференции и вывод ссылок на конференцию
     """
-    keyboard = Keyboards(message.from_user.id)
-
     if message.text == "Вернуться назад":
-        await message.answer("Вам нужно автоматически записывать вашу конференцию?:", reply_markup=await keyboard.ultimate_keyboard('record'))
-        await state.set_state(CreateMeetingStates.get_auto_recording.state)
+        record_keyboard = await bank_of_keys.ultimate_keyboard('record')
+        await message.answer("Вам нужно автоматически записывать вашу конференцию?:", reply_markup=record_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
+        await state.set_state(CreateMeetingStates.get_auto_recording)
     else:    
         await message.answer("Ваша конференция создается...")
         meeting_data = await helper.fill_meeting_data_credits(message.from_user.id, message.text)
-        account = await helper.fill_account_credits(message.from_user.id)
+        account = await helper.fill_account_credits(meeting_data[2])
         try:
             try:
-                user = Initialization(message.from_user.id)
-                answer = await create_and_get_meeting_link(account, meeting_data[0])
-                await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=types.ReplyKeyboardRemove(), disable_web_page_preview=True)
-                await user.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
-            except Exception as e:
-                logging.error(f"Ошибка: {e}")
 
-            #await message.answer(f"Конференция создана:\nCсылка для организатора {answer[0]}", disable_web_page_preview=True)
-            #await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {meeting_data[0].start_time.strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", disable_web_page_preview=True)
-            await state.finish()
+                answer = await create_and_get_meeting_link(account, meeting_data[0])
+                await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+                await mongodb_interface.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
+            except Exception as e:
+                logging.error(f"Error during create meeting: {e}")
+                await bot.send_message(chat_id='5890864355', text=f'Неизвестная ошибка бота!!!\nID пользователя: {message.from_user.id}\n{e}')
+            await state.clear()
         except CreateMeetingError:
           await message.answer("Неудалось создать конференцию, обратитесь в техническую поддержку")
-          await state.finish()
+          await state.clear()

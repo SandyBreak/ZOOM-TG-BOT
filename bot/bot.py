@@ -1,69 +1,69 @@
 #!/usr/bin/env python
+
 # -*- coding: UTF-8 -*-
 
+from aiogram.types.bot_command import BotCommand
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import BotCommand
-
-import logging
-import asyncio
-
 from dotenv import load_dotenv
-from handlers.commands import register_handlers_commands
-from handlers.create_new_meeting import register_handlers_create_meeting
-from handlers.get_planned_meetings import register_handlers_get_planned_meetings
 
-from database.create_db import create_db
+import asyncio
+import logging
 
+from admin import admin_panel
 
 from helper_classes.assistant import MinorOperations
+from database.mongodb.mongo_init import create_db
+from routers import commands, create_new_meeting
 
-logger = logging.getLogger(__name__)
+
+helper = MinorOperations()
 
 
-async def set_commands(bot: Bot) -> None:
+async def set_commands_and_description(bot: Bot) -> None:
     commands = [
-      BotCommand(
+    BotCommand(
         command="/help",
         description="Помощь"
-			),
-      BotCommand(
+		),
+    BotCommand(
         command="/create",
-				description="Создать новую конференцию"
-			),
-      BotCommand(
+		description="Создать новую конференцию"
+		),
+    BotCommand(
         command="/reset",
         description="Начать заполнение данных о создаваемой конференции заново"
-      ),
-      BotCommand(
+		),
+    BotCommand(
         command="/cancel",
-				description="Отменить создание конференции"
-			),
-      BotCommand(
-        command="/meetings",
-        description="Получить список запланированных конференций на дату"
-      )
+		description="Отменить создание конференции"
+		)
     ]
-
+    long_description_one = f""""""
+    short_description = f""
+    
+    await bot.set_my_description(description=long_description_one)
+    await bot.set_my_short_description(short_description=short_description)
     await bot.set_my_commands(commands)
-
+    
+    
 async def main():
-  await create_db()
-  helper = MinorOperations()
-  bot = Bot(token=await helper.get_token())
-  dp = Dispatcher(bot, storage=MemoryStorage())
-  
-  logging.basicConfig(level=logging.INFO)
-	
-  #Регистрация команд и обработчиков событий
-  await set_commands(bot)
-  await register_handlers_commands(dp)
-  await register_handlers_create_meeting(dp)
-  await register_handlers_get_planned_meetings(dp)
-  #await dp.skip_updates()
-  print('Bot STARTED')
-  await dp.start_polling()
+    load_dotenv()#Потом убрать надо
+    
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%m %H:%M')
+    
+    bot = Bot(token=await helper.get_tg_token())
+    dp = Dispatcher()
+    
+    await set_commands_and_description(bot)
+    dp.include_router(commands.router)
+    dp.include_router(create_new_meeting.router)
+    dp.include_router(admin_panel.router)
+
+    await create_db()
+    logging.warning("BOT STARTED")
+    await dp.start_polling(bot)
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
