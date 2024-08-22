@@ -2,3 +2,4 @@
 /secondary_content
 
 *__pycache__*
+*.DS_Store*

@@ -145,7 +145,7 @@ async def get_name_create_meeting(message: Message, state: FSMContext, bot: Bot)
             try:
 
                 answer = await create_and_get_meeting_link(account, meeting_data[0])
-                await message.answer(f"Конференция создана:\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+                await message.answer(f"Конференция создана:\nПочта аккаунта:{account.name}\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
                 await mongodb_interface.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
             except Exception as e:
                 logging.error(f"Error during create meeting: {e}")
