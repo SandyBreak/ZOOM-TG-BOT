@@ -128,8 +128,8 @@ class Keyboards:
         sorted_available_time_slots = list(set(available_time_slots))
         sorted_available_time_slots = sorted(sorted_available_time_slots, key=lambda x: x)
         
-        for slot in sorted_available_time_slots:
-            print(slot, type(slot))
+        #for slot in sorted_available_time_slots:
+        #    print(slot, type(slot))
         for ctr in range(0, len(sorted_available_time_slots)-1, 2):
             buttons.append(KeyboardButton(text=sorted_available_time_slots[ctr].strftime('%H:%M')))
             buttons.append(KeyboardButton(text=sorted_available_time_slots[ctr+1].strftime('%H:%M')))    
