@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
-from aiogram.types import Message, ReplyKeyboardRemove
 
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from aiogram import Router
@@ -55,6 +55,5 @@ async def bot_help(message: Message, state: FSMContext) -> None:
 
 Если бот внезапно перестал работать, пожайлуста сообщите об этом по этому адресу: @velikiy_ss"
 """
-
     await  message.answer(help_message, reply_markup=ReplyKeyboardRemove())
     await state.clear()

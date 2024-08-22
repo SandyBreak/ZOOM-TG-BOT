@@ -5,15 +5,14 @@
 from aiogram.types.bot_command import BotCommand
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
-
 import asyncio
 import logging
 
-from admin import admin_panel
 
 from helper_classes.assistant import MinorOperations
 from database.mongodb.mongo_init import create_db
 from routers import commands, create_new_meeting
+from admin import admin_panel
 
 
 helper = MinorOperations()
@@ -38,7 +37,7 @@ async def set_commands_and_description(bot: Bot) -> None:
 		description="Отменить создание конференции"
 		)
     ]
-    long_description_one = f""""""
+    long_description_one = f""
     short_description = f""
     
     await bot.set_my_description(description=long_description_one)

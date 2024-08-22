@@ -1,13 +1,11 @@
 # -*- coding: UTF-8 -*-
+
 from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Union
 from bson import ObjectId
+from typing import Union
 import logging
-#from helper_classes.assistant import MinorOperations
 import os
 
-
-#helper = MinorOperations()
 
 class Interaction:
 	def __init__(self) -> None:
@@ -15,6 +13,7 @@ class Interaction:
 		Строка подключения для локального запуска
 		"""
 		#mongo_client = AsyncIOMotorClient(f'mongodb://localhost:27017')
+		
 		"""
 		Строка подключения для запуска на сервере
 		"""
@@ -24,9 +23,10 @@ class Interaction:
 		
 		self.__db = mongo_client['zoom_tg_bot']
 		self.__current_data = self.__db['current_data_f_new_meeting'] # Коллекция с данными
-	
-	async def find_data(self, filter: dict) -> dict:
 
+
+	async def find_data(self, filter: dict) -> dict:
+     
 		return await self.__current_data.find_one(filter)
 
 
@@ -67,7 +67,7 @@ class Interaction:
 	        'duration_meeting': 0,
 			'autorecord_flag': '',
 			'illegal_intervals': []
-	    }
+	    	}
 
 			update = {'$push': {'users': new_user}}
 			await self.update_data(document, update)
@@ -84,10 +84,11 @@ class Interaction:
 
 		await self.update_data(filter_by_id, delete_data)
   
-	async def update_data_about_created_conferences(self, tg_addr, current_date) -> None:
+  
+	async def update_data_about_created_conferences(self, tg_addr: str, current_date: str) -> None:
 		document = await self.find_data({"_id": ObjectId("65f7110e4e9a3762bba43801")})
 		new_meeting = {
-			"creator": tg_addr,
+			"creator": f'@{tg_addr}',
 			"date_of_creation": current_date
 		}
 		update = {'$push': {'created_meetings': new_meeting}}

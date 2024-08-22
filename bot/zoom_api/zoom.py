@@ -4,8 +4,8 @@ from zoomus import ZoomClient
 import logging
 
 
-from data_storage.dataclasses import ZoomAccount, MeetingData
 from exceptions import CreateMeetingError, GetListMeetingError
+from data_storage.dataclasses import ZoomAccount, MeetingData
 
 
 async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: MeetingData) -> dict:
@@ -43,7 +43,8 @@ async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: Meetin
 			logging.error(f"Error during create meeting: {e}")
 			raise CreateMeetingError
 	else:
-			raise CreateMeetingError
+		logging.error(f"Error during create meeting:response is NULL: {e}")
+		raise CreateMeetingError
 
 
 async def get_list_meeting(account: ZoomAccount, date:str)-> dict:
@@ -61,4 +62,5 @@ async def get_list_meeting(account: ZoomAccount, date:str)-> dict:
 		if meeting_list:
 			return meeting_list
 	except Exception as e:
+		logging.error("Error during get_list_meeting: {e}")
 		raise GetListMeetingError    

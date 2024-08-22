@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
-from datetime import datetime, timedelta
+
 from aiogram.utils.keyboard import KeyboardButton, ReplyKeyboardBuilder
+from datetime import datetime, timedelta
 
 
 from database.mongodb.interaction import Interaction
 from helper_classes.assistant import MinorOperations
 
-helper = MinorOperations()
 
 mongodb_interface = Interaction()
-
+helper = MinorOperations()
 
 
 class Keyboards:
@@ -94,6 +94,7 @@ class Keyboards:
         entered_date = await mongodb_interface.get_data(user_id, 'date')
         available_time_slots = []
         response_logs = []
+        
         if illegal_intervals:
             for account_intervals in illegal_intervals:
                 time_slots = []
@@ -106,9 +107,6 @@ class Keyboards:
                     current_slot_end = current_slot_start + timedelta(minutes=30)
                     time_slots.append(current_slot_start)
                     current_slot_start = current_slot_end
-        
-                
-
         
                 for slot in time_slots:
                     for start, end in account_intervals:

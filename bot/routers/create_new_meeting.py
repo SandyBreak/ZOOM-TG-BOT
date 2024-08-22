@@ -8,10 +8,10 @@ from aiogram import Router, F, Bot
 import logging
 
 
-from data_storage.states import CreateMeetingStates
+from zoom_api.zoom import create_and_get_meeting_link
 from helper_classes.assistant import MinorOperations
 from database.mongodb.interaction import Interaction
-from zoom_api.zoom import create_and_get_meeting_link
+from data_storage.states import CreateMeetingStates
 from database.mongodb.check_data import CheckData
 from data_storage.keyboards import  Keyboards
 from exceptions import *
@@ -21,8 +21,6 @@ mongodb_interface = Interaction()
 helper = MinorOperations()
 bank_of_keys = Keyboards()
 router = Router()
-
-    
 
 
 @router.message(Command(commands=['create', 'reset']))
@@ -38,7 +36,6 @@ async def start_create_new_meeting(message: Message, state: FSMContext) -> None:
     await message.answer("Введите дату конференции:", reply_markup=calendar_keyboard.as_markup(resize_keyboard=True, one_time_keyboard=True))
     
     await state.set_state(CreateMeetingStates.get_date)
-
 
 
 @router.message(F.text, StateFilter(CreateMeetingStates.get_date))
@@ -146,7 +143,7 @@ async def get_name_create_meeting(message: Message, state: FSMContext, bot: Bot)
 
                 answer = await create_and_get_meeting_link(account, meeting_data[0])
                 await message.answer(f"Конференция создана:\nПочта аккаунта: {account.name}\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
-                await mongodb_interface.update_data_about_created_conferences(message.from_user.username, (datetime.now()+timedelta(hours=3)).strftime('%Y-%m-%d %H:%M'))
+                await mongodb_interface.update_data_about_created_conferences(message.from_user.username, (datetime.now()).strftime('%Y-%m-%d %H:%M'))
             except Exception as e:
                 logging.error(f"Error during create meeting: {e}")
                 await bot.send_message(chat_id='5890864355', text=f'Неизвестная ошибка бота!!!\nID пользователя: {message.from_user.id}\n{e}')

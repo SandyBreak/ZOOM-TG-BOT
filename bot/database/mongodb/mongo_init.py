@@ -1,9 +1,13 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+# -*- coding: UTF-8 -*-
+
 from helper_classes.assistant import MinorOperations
+from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 import logging
 
+
 helper = MinorOperations()
+
 
 async def create_db():
     try:

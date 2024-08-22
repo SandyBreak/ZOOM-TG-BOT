@@ -4,30 +4,45 @@ from datetime import datetime, timedelta
 import random
 import ast
 import os
+from typing import Union
 
 from data_storage.dataclasses import ZoomAccount, MeetingData
 from database.mongodb.interaction import Interaction
 
+
 mongodb_interface = Interaction()
+
 
 class MinorOperations:
 	def __init__(self):
 		pass
-
+        
 
 	def get_mongo_login(self):
+		"""
+        Получение логина пользователя базы данных
+        """
 		return os.environ.get('MONGO_INITDB_ROOT_USERNAME')
 
 
 	def get_mongo_password(self):
+		"""
+        Получение пароля пользователя базы данных
+        """
 		return os.environ.get('MONGO_INITDB_ROOT_PASSWORD')
 
 
 	async def get_tg_token(self):
+		"""
+        Получение токена бота
+        """
 		return os.environ.get('TELEGRAM_TOKEN')
 
 	
 	async def fill_account_credits(self, account_index: int) -> ZoomAccount:
+		"""
+        Заполнение структуры с данными о ZOOM аккаунте 
+        """
 		api_accounts = ast.literal_eval(os.environ.get("API_ACCOUNTS"))
 		mas_account = api_accounts[account_index]
 		
@@ -40,7 +55,10 @@ class MinorOperations:
 		return account
 
 
-	async def fill_meeting_data_credits(self, user_id: int, name: str) -> MeetingData:
+	async def fill_meeting_data_credits(self, user_id: int, name: str) -> Union[MeetingData, int, str]:
+		"""
+		Заполнение структуры с данными о создаваемой конференции
+        """
 		entered_date = await mongodb_interface.get_data(user_id, 'date')
 		start_time = await  mongodb_interface.get_data(user_id, 'start_time')
 		duration = await  mongodb_interface.get_data(user_id, 'duration_meeting')

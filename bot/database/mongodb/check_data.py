@@ -3,15 +3,15 @@
 from datetime import datetime, timedelta
 import logging
 
+
 from helper_classes.assistant import MinorOperations
 from database.mongodb.interaction import Interaction
 from zoom_api.zoom import get_list_meeting
 from exceptions import *
 
 
-
+mongodb_interface = Interaction()
 helper = MinorOperations()
-db = Interaction()
 
 
 class CheckData:
@@ -19,30 +19,32 @@ class CheckData:
 		self.user_id = user_id
 
 	
-	async def checking_the_date_for_accuracy(self, entered_date: str) -> str:
+	async def checking_the_date_for_accuracy(self, entered_date: str) -> dict:
 		"""
 		Проверка даты на корректность
 		"""
 		if len(entered_date.split('.')) != 2:
 			raise DataInputError
 		try:
-				date = datetime.strptime(entered_date, '%d.%m')
+			date = datetime.strptime(entered_date, '%d.%m')
 
-				if date.month < datetime.now().month:
-					date = datetime.strptime(entered_date+'.'+str(datetime.now().year+1), '%d.%m.%Y')
-				else:
-					date = datetime.strptime(entered_date+'.'+str(datetime.now().year), '%d.%m.%Y')
+			if date.month < datetime.now().month:
+				date = datetime.strptime(entered_date+'.'+str(datetime.now().year+1), '%d.%m.%Y')
+			else:
+				date = datetime.strptime(entered_date+'.'+str(datetime.now().year), '%d.%m.%Y')
 				
-				date = date.strftime('%Y-%m-%d')
+			date = date.strftime('%Y-%m-%d')
 
-				filter_by_id = {'users.tg_id': self.user_id}
-				update = {'$set': {'users.$.date': f'{date}',}}
-				await db.update_data(filter_by_id, update)
-				illegal_intervals = await self.get_available_time_for_meeting(date)
-				return illegal_intervals
+			filter_by_id = {'users.tg_id': self.user_id}
+			update = {'$set': {'users.$.date': f'{date}',}}
+			await mongodb_interface.update_data(filter_by_id, update)
+			illegal_intervals = await self.get_available_time_for_meeting(date)
+			
+			return illegal_intervals
 		
 		except Exception as e:
-				raise DataInputError
+			logging.error("Error during checking_the_date_for_accuracy: {e}")
+			raise DataInputError
 
 			
 	
@@ -70,7 +72,7 @@ class CheckData:
 
 		if illegal_intervals:
 			update = {'$set': {'users.$.illegal_intervals': illegal_intervals}}
-			await db.update_data(filter_by_id, update)
+			await mongodb_interface.update_data(filter_by_id, update)
     
 			return illegal_intervals
 	
@@ -83,8 +85,8 @@ class CheckData:
 			raise DataInputError
 		
 		filter_by_id = {'users.tg_id': self.user_id}
-		entered_date = await db.get_data(self.user_id, 'date')
-		illegal_intervals = await db.get_data(self.user_id, 'illegal_intervals')
+		entered_date = await mongodb_interface.get_data(self.user_id, 'date')
+		illegal_intervals = await mongodb_interface.get_data(self.user_id, 'illegal_intervals')
 
 		try:
 			start_time = datetime.strptime(entered_date + entered_start_time, '%Y-%m-%d%H:%M')
@@ -116,7 +118,7 @@ class CheckData:
 				raise LongTimeInputError
 			else:
 				update = {'$set': {'users.$.start_time': entered_start_time}}
-				await db.update_data(filter_by_id, update)
+				await mongodb_interface.update_data(filter_by_id, update)
     
 		except LongTimeInputError:
 			raise LongTimeInputError
@@ -133,9 +135,9 @@ class CheckData:
 		"""
 		
 		filter_by_id = {'users.tg_id': self.user_id}
-		entered_date = await db.get_data(self.user_id, 'date')
-		start_time = await db.get_data(self.user_id, 'start_time')
-		illegal_intervals = await db.get_data(self.user_id, 'illegal_intervals')
+		entered_date = await mongodb_interface.get_data(self.user_id, 'date')
+		start_time = await mongodb_interface.get_data(self.user_id, 'start_time')
+		illegal_intervals = await mongodb_interface.get_data(self.user_id, 'illegal_intervals')
 
 		if len(start_time.split(':')) != 2:
 			raise DataInputError
@@ -181,7 +183,7 @@ class CheckData:
 				update = {'$set': {'users.$.duration_meeting': duration, 'users.$.choosen_zoom': counter_account}}
 			
 
-			await db.update_data(filter_by_id, update)
+			await mongodb_interface.update_data(filter_by_id, update)
 		except LongTimeInputError:
 			raise LongTimeInputError
 		except HalfTimeInputError:
@@ -208,8 +210,8 @@ class CheckData:
 				update = {'$set': {'users.$.autorecord_flag': 'none'}}
 			else:
 				raise DataInputError
-			await db.update_data(filter_by_id, update)
+			await mongodb_interface.update_data(filter_by_id, update)
 
 		except Exception as e:
-      
+			logging.error("Error during check_record_for_accuracy: {e}")
 			raise DataInputError
