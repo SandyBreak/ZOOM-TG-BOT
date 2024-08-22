@@ -1,14 +1,16 @@
 # -*- coding: UTF-8 -*-
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton
 
+
 from database.mongodb.interaction import Interaction
-
-mongodb_interface = Interaction()
-
 from data_storage.emojis_chats import Emojis
 
+
+mongodb_interface = Interaction()
 emojis = Emojis()
+
 
 class AdminKeyboards:
     def __init__(self) -> None:

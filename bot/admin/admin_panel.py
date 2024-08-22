@@ -11,6 +11,7 @@ import logging
 import hashlib
 import re
 
+
 from admin.config import BANNED_USERS, MAX_ATTEMPTS, ADMIN_USERS, LIST_USERS_TO_NEWSLETTER
 from admin.states import ControlPanelStates
 from admin.assistant import AdminOperations
@@ -124,9 +125,11 @@ async def get_manual_admin_panel(callback: CallbackQuery):
     await callback.message.answer(manual_message, ParseMode.HTML)
     await callback.answer()
 
+
 async def cancel_newsletter(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
     await state.clear()
+
         
 @router.message(StateFilter(ControlPanelStates.launch_newsletter))
 async def launch_newsletter(message: Message, bot: Bot) -> None:
@@ -237,7 +240,7 @@ async def view_active_users(callback: CallbackQuery, bot: Bot) -> None:
     await callback.answer()
 
 
-async def add_user_to_newsletter(callback: CallbackQuery, user_id: str, user_tg_addr: str):
+async def add_user_to_newsletter(callback: CallbackQuery, user_id: str, user_tg_addr: str) -> None:
     if [user_list for user_list in LIST_USERS_TO_NEWSLETTER if user_id in user_list]:
         LIST_USERS_TO_NEWSLETTER.pop()
         await callback.answer()    
@@ -246,7 +249,7 @@ async def add_user_to_newsletter(callback: CallbackQuery, user_id: str, user_tg_
         await callback.answer()
             
             
-async def ban_user(callback: CallbackQuery, bot: Bot, user_id: str):
+async def ban_user(callback: CallbackQuery, bot: Bot, user_id: str) -> None:
     with suppress(TelegramBadRequest):
         if user_id in ADMIN_USERS:
             await callback.message.edit_text(f'{emojis.FAIL} Невозможно забанить пользователя, он является администратором!')
@@ -262,7 +265,7 @@ async def ban_user(callback: CallbackQuery, bot: Bot, user_id: str):
         await callback.answer()
 
 
-async def assign_user_as_admin(callback: CallbackQuery, bot: Bot, user_id: str):
+async def assign_user_as_admin(callback: CallbackQuery, bot: Bot, user_id: str) -> None:
     with suppress(TelegramBadRequest):
         if user_id in BANNED_USERS:
             await callback.message.edit_text(f'{emojis.FAIL} Невозможно добавить админа, пользователь уже находится в бане!')

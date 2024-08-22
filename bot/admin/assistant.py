@@ -1,15 +1,10 @@
 # -*- coding: UTF-8 -*-
 
-from aiogram.types import FSInputFile
 from typing import Optional, Tuple
-from aiogram import Bot
-
+from dotenv import set_key
 import logging
 import json
 import os
-
-
-from dotenv import set_key
 
 
 class AdminOperations:
