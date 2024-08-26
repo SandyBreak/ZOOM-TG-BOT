@@ -180,6 +180,8 @@ class Keyboards:
 
             buttons.append(KeyboardButton(text=str(duration)[:-3]))  # Добавляем кнопку с длительностью
 
+            quantity_buttons += 1  # Увеличиваем счетчик кнопок
+            current_slot_start = current_slot_end  # Переходим к следующему слоту
             
             # Если добавлено 2 кнопки, формируем строку и сбрасываем счетчик
             if quantity_buttons == 2:
