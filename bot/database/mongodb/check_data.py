@@ -138,8 +138,7 @@ class CheckData:
 		entered_date = await mongodb_interface.get_data(self.user_id, 'date')
 		start_time = await mongodb_interface.get_data(self.user_id, 'start_time')
 		illegal_intervals = await mongodb_interface.get_data(self.user_id, 'illegal_intervals')
-
-		if len(start_time.split(':')) != 2:
+		if len(duration.split(':')) != 2:
 			raise DataInputError
 		
 		try:
