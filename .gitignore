@@ -2,3 +2,10 @@
 
 *__pycache__*
 *.DS_Store*
+/.vscode
+/bot/trash
+
+/src/trash
+/bot/tests
+
+/migrations/versions
