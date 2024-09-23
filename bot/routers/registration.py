@@ -43,6 +43,7 @@ async def get_city(message: Message, state: FSMContext, bot: Bot) -> None:
     Получение ФИО
     """
     SUPER_GROUP_ID = await GroupService.get_group_id()
+    message_log = False
     try:
         await UserService.init_user(message.from_user.id, message.from_user.username, message.from_user.full_name, message.text)
         await bot.delete_message(chat_id=message.chat.id, message_id=(await state.get_data()).get('message_id'))
