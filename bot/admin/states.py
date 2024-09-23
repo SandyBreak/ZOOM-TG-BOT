@@ -3,9 +3,8 @@
 from aiogram.fsm.state import State, StatesGroup
      
     
-class ControlPanelStates(StatesGroup):
-    enter_pass = State()
+class AdminPanelStates(StatesGroup):
+    
+    base_state = State()
     
     launch_newsletter = State()
-    
-    launch_targeted_newsletter = State()
