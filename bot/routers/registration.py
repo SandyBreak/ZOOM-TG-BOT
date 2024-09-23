@@ -24,6 +24,8 @@ async def cmd_start(message: Message, state: FSMContext, bot: Bot) -> None:
     """
     Начало регистрации
     """
+    if (await state.get_data()).get('message_id'):
+        await bot.delete_message(chat_id=message.chat.id, message_id=(await state.get_data()).get('message_id'))
     await state.clear()
     try:
         user_date_reg =  await UserService.check_user_exists(message.from_user.id)
