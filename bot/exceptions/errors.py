@@ -21,6 +21,13 @@ class HalfTimeInputError(Exception):
 	pass
 
 
+class EpmtyTableError(Exception):
+    """
+    Ошибка пустой таблицы при выгрузке данных
+    """
+    pass
+
+
 class CreateMeetingError(Exception):
 	"""
 	Ошибка создания конференции
@@ -33,4 +40,17 @@ class GetListMeetingError(Exception):
 	Ошибка получения списка конференций
 	"""
 	pass
+
+
+class UserNotRegError(Exception):
+    """
+    Ошибка из-за того, что пользователь не зарегистиррован в боте
+    """
+    pass
+
+
+class RegistrationError(Exception):
+    
+    pass
+    
 
