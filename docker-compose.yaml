@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   bot:
-    container_name: bot
+    container_name: zoom_bot
     networks:
       - primary_postgres_db_network
     restart: always

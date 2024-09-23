@@ -73,11 +73,11 @@ class UserKeyboards:
         
         # Фикс ошибки перевода
         if first_day.strftime('%B') == 'March':
-            builder.row(InlineKeyboardButton(text='Март' + f' {first_day.strftime('%Y')}', callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text='Март' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
         elif first_day.strftime('%B') == 'May':
-            builder.row(InlineKeyboardButton(text='Май' + f' {first_day.strftime('%Y')}', callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text='Май' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
         else:
-            builder.row(InlineKeyboardButton(text=Translator().translate(first_day.strftime('%B'), src='en', dest='ru').text + f' {first_day.strftime('%Y')}', callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text=Translator().translate(first_day.strftime('%B'), src='en', dest='ru').text + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
         
         
         week_days_ru = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
@@ -89,7 +89,7 @@ class UserKeyboards:
         intermediate_date = first_day
         
         while intermediate_date < last_day_of_month:
-            buttons.append(InlineKeyboardButton(text=intermediate_date.strftime('%d'), callback_data=json.dumps({'key': 'date', 'value':f'{intermediate_date.strftime('%d.%m')}'})))
+            buttons.append(InlineKeyboardButton(text=intermediate_date.strftime('%d'), callback_data=json.dumps({'key': 'date', 'value':f"{intermediate_date.strftime('%d.%m')}"})))
             
             # Если день - воскресенье, добавляем строку кнопок
             if intermediate_date.strftime('%A') == 'Sunday':
