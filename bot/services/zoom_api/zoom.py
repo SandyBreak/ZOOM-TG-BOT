@@ -8,7 +8,6 @@ from exceptions.errors import CreateMeetingError, GetListMeetingError
 
 from models.dataclasses import ZoomAccount, MeetingData
 
-from services.google_api.google import GoogleApi
 
 
 async def create_and_get_meeting_link(account: ZoomAccount, meeting_data: MeetingData) -> list:
