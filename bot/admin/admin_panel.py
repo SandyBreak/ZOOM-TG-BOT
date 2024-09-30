@@ -166,7 +166,7 @@ async def view_user_stats(callback: CallbackQuery, bot: Bot) -> None:
     for user in user_data:
         if not(user.number_created_conferences):
             user.number_created_conferences = 0
-        users_list_str += f'ID: {user.id_tg}\nАдрес: {user.nickname}\nФИО: {user.fio}\nКол-во сканирований: {user.number_created_conferences}\n\n'
+        users_list_str += f'ID: {user.id_tg}\nАдрес: @{user.nickname}\nФИО: {user.fio}\nКол-во созданных конференций: {user.number_created_conferences}\n\n'
             
     await callback.message.answer(users_list_str)
     await callback.answer()
