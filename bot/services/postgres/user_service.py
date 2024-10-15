@@ -5,13 +5,13 @@ from typing import Optional
 import logging
 
 from sqlalchemy import select, func, update
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from models.table_models.user import User
 
 from services.postgres.database import get_async_session
 
-from exceptions.errors import UserNotRegError, RegistrationError
+from exceptions.errors import UserNotRegError, RegistrationError, TelegramAddressNotValidError
 
 
 class UserService:
@@ -58,7 +58,7 @@ class UserService:
                 if not user_exists_flag:
                     new_user = User(
                         id_tg=user_id,
-                        nickname=f'@{nickname}',
+                        nickname=nickname,
                         fullname=full_name,
                         fio=fio,
                         date_reg=datetime.now(),
@@ -67,7 +67,8 @@ class UserService:
                     # Выполнение вставки
                     session.add(new_user)
                     await session.commit()
-                
+            except IntegrityError as e:
+                raise TelegramAddressNotValidError
             except SQLAlchemyError as e:
                 logging.error(f"Ошибка первичной регистрации пользователя: {e}")
                 raise RegistrationError from e

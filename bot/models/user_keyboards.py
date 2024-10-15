@@ -73,16 +73,16 @@ class UserKeyboards:
         
         # Фикс ошибки перевода
         if first_day.strftime('%B') == 'March':
-            builder.row(InlineKeyboardButton(text='Март' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text='Март' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': None})))
         elif first_day.strftime('%B') == 'May':
-            builder.row(InlineKeyboardButton(text='Май' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text='Май' + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': None})))
         else:
-            builder.row(InlineKeyboardButton(text=Translator().translate(first_day.strftime('%B'), src='en', dest='ru').text + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': 'None'})))
+            builder.row(InlineKeyboardButton(text=Translator().translate(first_day.strftime('%B'), src='en', dest='ru').text + f" {first_day.strftime('%Y')}", callback_data=json.dumps({'key': None})))
         
         
         week_days_ru = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
         for day in week_days_ru:
-            buttons.append(InlineKeyboardButton(text=day, callback_data=json.dumps({'key': 'None'})))
+            buttons.append(InlineKeyboardButton(text=day, callback_data=json.dumps({'key': None})))
         builder.row(*buttons)
         buttons = []
         
@@ -97,7 +97,7 @@ class UserKeyboards:
                 if len(buttons) != 7 and len(buttons) != 0:
                     # Заполняем пустые кнопки до 7
                     for a in range(0, 7 - len(buttons)):
-                        buttons.insert(0, InlineKeyboardButton(text=f'----', callback_data=json.dumps({'key':'None'})))
+                        buttons.insert(0, InlineKeyboardButton(text=f'----', callback_data=json.dumps({'key': None})))
 
                 builder.row(*buttons)  # Добавляем строку в клавиатуру
                 buttons = []  # Очищаем список кнопок
@@ -106,7 +106,7 @@ class UserKeyboards:
         # Завершение добавления кнопок
         if len(buttons) != 7 and len(buttons) != 0:
             for a in range(0, 7 - len(buttons)):
-                buttons.append(InlineKeyboardButton(text="----", callback_data=json.dumps({'key':'None'})))  # Заполняем пустые кнопки до 7
+                buttons.append(InlineKeyboardButton(text="----", callback_data=json.dumps({'key': None})))  # Заполняем пустые кнопки до 7
             
         builder.row(*buttons)  # Добавляем последнюю строку кнопок
         buttons=[]
@@ -133,7 +133,6 @@ class UserKeyboards:
         Returns:
             InlineKeyboardBuilder: Клавиатура с возможным временем начала конфреренции
         """
-        print('start_time_keyboard enabled')
         builder = InlineKeyboardBuilder()
         buttons = []
         builder.row(InlineKeyboardButton(text="Вернуться назад", callback_data=json.dumps({'key': 'back'}))) # Кнопка для возврата назад
@@ -206,7 +205,7 @@ class UserKeyboards:
             current_slot_end = current_slot_start + timedelta(minutes=30)  # Увеличиваем длительность на 30 минут
             duration = current_slot_end - conference_start  # Вычисляем длительность
             
-            if conference_start + duration <= datetime.strptime(start_date + "19:00", '%Y-%m-%d%H:%M'): # Если конец конференции меньше чем 7 часов добавляем кнопку и обновляем счетчик
+            if conference_start + duration <= datetime.strptime(start_date + "21:00", '%Y-%m-%d%H:%M'): # Если конец конференции меньше чем 7 часов добавляем кнопку и обновляем счетчик
                 buttons.append(InlineKeyboardButton(text=str(duration)[:-3], callback_data=json.dumps({'key': 'duration', 'value':str(duration)[:-3]})))
                 quantity_buttons += 1
             

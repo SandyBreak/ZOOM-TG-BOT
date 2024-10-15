@@ -81,14 +81,15 @@ class MinorOperations:
 	async def create_worktime_slots(entered_date: str) -> list:
 		time_slots = []
 		start_time = datetime.strptime(entered_date + "09:00", '%Y-%m-%d%H:%M')  # Начало рабочего дня
-		end_time = datetime.strptime(entered_date + "19:00", '%Y-%m-%d%H:%M')  # Конец рабочего дня
+		end_time = datetime.strptime(entered_date + "21:00", '%Y-%m-%d%H:%M')  # Конец рабочего дня
 
 		current_slot_start = start_time # Текущий временной интервал
         
         # Генерация временных слотов по 30 минут
 		while current_slot_start < end_time:
 			current_slot_end = current_slot_start + timedelta(minutes=30)
-			time_slots.append(current_slot_start)  # Добавляем слот
+			if current_slot_start > datetime.now():
+				time_slots.append(current_slot_start)  # Добавляем слот
 			current_slot_start = current_slot_end  # Переходим к следующему слоту
 
 		return time_slots
@@ -126,32 +127,6 @@ class MinorOperations:
 				return True
 		return False
 
-	@staticmethod
-	def get_max_available_duration(illegal_intervals: list, conference_start: datetime, conference_end_limit: datetime):
-		illegal_intervals = [(datetime.fromisoformat(start), datetime.fromisoformat(end)) for start, end in illegal_intervals]
-		illegal_intervals.sort()
-
-		available_intervals = []
-		last_end = conference_start
-
-		for start, end in illegal_intervals:
-			if start > last_end:
-				if last_end < conference_end_limit:
-					available_intervals.append((last_end, min(start, conference_end_limit)))
-			last_end = max(last_end, end)
-
-		if last_end < conference_end_limit:
-			available_intervals.append((last_end, conference_end_limit))
-
-		max_duration = timedelta(0)
-		for start, end in available_intervals:
-			duration = end - start
-			if duration > max_duration:
-				max_duration = duration
-		print(type(max_duration))
-		print(max_duration)
-		return max_duration
-
 
 	@staticmethod
 	async def max_duration_for_account(time_slots: list, conference_start: datetime):
@@ -172,7 +147,7 @@ class MinorOperations:
     	# Вывод доступных длительностей
 		for duration in available_durations:
 			return_max_duration_value = duration
-		print(return_max_duration_value)
+		print('Max duration for Account:', return_max_duration_value)
 		if return_max_duration_value:
 			return conference_start + return_max_duration_value
 		else:

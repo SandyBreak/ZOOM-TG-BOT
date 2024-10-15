@@ -68,7 +68,6 @@ async def get_date(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None
         bot (Bot): Bot class
     """
     data = json.loads(callback.data)
-    message_log = False
     
     if data['key'] == 'month_shift':
         calendar_keyboard = await UserKeyboards.calendar_keyboard(data['value'])
@@ -82,9 +81,8 @@ async def get_date(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None
         await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text='Выберите время начала конфренции:', reply_markup=start_time_keyboard.as_markup(resize_keyboard=True))
         
         await state.set_state(CreateMeetingStates.get_start_time)
-    else:
-        message_log = await callback.message.answer("Кажется вы нажали не ту кнопку, попробуйте еще раз!")
-        await send_log_message(callback, bot, message_log)
+    elif not (data['key']):
+        await callback.answer(text="Эта кнопка ничего не делает.", show_alert=True)
     
 
 @router.callback_query(F.data, StateFilter(CreateMeetingStates.get_start_time))

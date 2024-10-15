@@ -8,14 +8,14 @@ from aiogram import Router, F, Bot
 
 from admin.admin_logs import send_log_message
 
-from services.postgres.user_service import UserService
 from services.postgres.group_service import GroupService
+from services.postgres.user_service import UserService
 
 from models.long_messages import MENU_MESSAGE
 from models.emojis_chats import Emojis
 from models.states import RegUserStates
 
-from exceptions.errors import UserNotRegError, RegistrationError
+from exceptions.errors import UserNotRegError, RegistrationError, TelegramAddressNotValidError
 
 router = Router()
 
@@ -57,7 +57,9 @@ async def get_city(message: Message, state: FSMContext, bot: Bot) -> None:
         
         await message.answer("Поздравляю! Вы успешно прошли регистрацию!")
         await message.answer(MENU_MESSAGE, ParseMode.HTML)
+    except TelegramAddressNotValidError:
+        message_log = await message.answer(f"{Emojis.FAIL} Ошибка регистрации! {Emojis.FAIL}\nУ вас пустой адрес телеграмм аккаунта. Для успешной регистрации он не должен быть пустым. Если вы не знаете как его поменять обратитесь в поддержку по адресу @global_aide_bot.")
     except RegistrationError:
-        message_log = await message.answer(f"{Emojis.FAIL} Ошибка регистрации! {Emojis.FAIL}")
+        message_log = await message.answer(f"{Emojis.FAIL} Ошибка регистрации! {Emojis.FAIL}\nПожалуйста сообщите об этом по адресу @global_aide_bot.")
     await state.clear()
     if message_log: await send_log_message(message, bot, message_log)

@@ -53,4 +53,10 @@ class RegistrationError(Exception):
     
     pass
     
+    
+class TelegramAddressNotValidError(Exception):
+    """
+    Пустой адрес телеграмм аккаунта пользователя
+    """
+    pass
 

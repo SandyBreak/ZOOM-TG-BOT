@@ -50,11 +50,15 @@ class CheckData:
 			'zoom2':[],
 			'zoom3':[],
 		}
+		logs_intervals = {
+      		'zoom1':[],
+			'zoom2':[],
+			'zoom3':[],
+		}
 		zoom_keys = ['zoom1', 'zoom2', 'zoom3']
-  
+		print('==============')
 		for i in range(0, 3): # Перебираем все аккаунты
 			account = await helper.fill_account_credits(i)
-			print(account.name)
 			meeting_list = await get_list_meeting(account, date.strftime('%Y-%m-%d'))
 
 			for meeting in meeting_list['meetings']:
@@ -64,12 +68,9 @@ class CheckData:
 					start_time = datetime.strptime(meeting['start_time'][:-4], "%Y-%m-%dT%H:%M")
 					end_time = start_time + timedelta(minutes= meeting['duration'])
 					illegal_intervals[zoom_keys[i]].append(((start_time + timedelta(hours=3)).strftime('%Y-%m-%dT%H:%M'), (end_time + timedelta(hours=3)).strftime('%Y-%m-%dT%H:%M')))
-			
-			logging.info(illegal_intervals[zoom_keys[i]])
+					logs_intervals[zoom_keys[i]].append(((start_time + timedelta(hours=3)).strftime('%H:%M'), (end_time + timedelta(hours=3)).strftime('%H:%M')))
+			logging.info(f'{account.name}: {logs_intervals[zoom_keys[i]]}')
 		
-		
-		print('==============')
-		print(illegal_intervals)
 		print('==============')
 
 		if illegal_intervals:
@@ -97,7 +98,6 @@ class CheckData:
 			response_logs = []
    
 			for account_intervals in illegal_intervals.values():
-				print(account_intervals)
 				for start, end in account_intervals:
 					start = datetime.strptime(start, "%Y-%m-%dT%H:%M")
 					end = datetime.strptime(end, "%Y-%m-%dT%H:%M")
@@ -109,7 +109,7 @@ class CheckData:
 				response_logs.append(is_time_valid)
 				is_time_valid = True
     
-			print('response_logs:', response_logs)
+			#print('Response_logs:', response_logs)
 			if not True in response_logs:
 				raise LongTimeInputError
 			else:
