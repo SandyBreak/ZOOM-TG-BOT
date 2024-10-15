@@ -1,9 +1,10 @@
 /venv
 
-*__pycache__*
-*.DS_Store*
-/.vscode
+__pycache__
+.DS_Store
 /bot/trash
 
-/src/trash
+/bot/trash
 /bot/tests
+.env
+docker-compose.env
