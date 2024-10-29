@@ -83,26 +83,6 @@ class GroupService:
         except Exception as e:
             logging.error(f"Ошибка при получении id чата пользователя в группе: {e}")
     
-    
-    @staticmethod
-    async def update_user_message_thread_id(user_tg_id: int, message_thread_id: int, session: AsyncSession = get_async_session()) -> bool:
-        """
-        Получает id чата с пользователем для группы.
-        """
-        try:
-            async for session in get_async_session():
-                subquery = select(User.id).where(User.id_tg == user_tg_id).scalar_subquery()
-                await session.execute(
-                        update(UserChat)
-                        .where(UserChat.user_id == subquery)
-                        .values(id_topic_chat=message_thread_id)
-                        )
-                await session.commit()
-                await session.close()
-        except Exception as e:
-            logging.error(f"Ошибка при обновлении id чата пользователя в группе: {e}")
-
-    
     @staticmethod
     async def save_user_message_thread_id(user_tg_id: int, message_thread_id: int, session: AsyncSession = get_async_session()) -> bool:
         """
