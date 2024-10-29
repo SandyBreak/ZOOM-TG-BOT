@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 
+from typing import Optional
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select, update, insert
 
 from services.postgres.database import get_async_session
@@ -16,86 +16,84 @@ class GroupService:
     def __init__(self):
         pass
 
+
     @staticmethod
-    async def group_init(id_group: int,  session: AsyncSession = get_async_session()) -> str:
+    async def group_init(id_group: int) -> None:
         """
-        Идентификация в группе
+            Идентификация группы в которую добавлен бот и сохранение ее ID
+        
+        Args:
+            id_group (int): Telegram Group ID
         """
         try:
             async for session in get_async_session():
                 session.add(AdminGroup(group_id=id_group))
-                
                 await session.commit()
-                
-                await session.close()
-        except Exception as e:  # Ловим все исключения
-            logging.error(f"Ошибка при идентификации группы: {e}")
+        except Exception as e:
+            logging.error(f"Ошибка идентификации группы: {e}")
     
     
     @staticmethod
-    async def group_reset(session: AsyncSession = get_async_session()) -> str:
+    async def group_reset() -> None:
         """
-        Сброс группы
+        Удаление ID группы при удалении бота из групыы
         """
         try:
             async for session in get_async_session():
-                await session.execute(delete(AdminGroup))
-                
-                await session.commit()  # Подтверждаем изменения
+                await session.execute(
+                    delete(AdminGroup)
+                )
+                await session.commit()
         except Exception as e:
-            await session.rollback()  # Откатываем изменения в случае ошибки
-            logging.error(f"Ошибка при сбросе группы: {e}")
+            await session.rollback()
+            logging.error(f"Ошибка сброса группы: {e}")
     
     
     @staticmethod
-    async def get_group_id(session: AsyncSession = get_async_session()) -> str:
+    async def get_group_id() -> Optional[str]:
         """
         Получение ID группы
         """
         try:
             async for session in get_async_session():
-                get_group_id = await session.execute(select(AdminGroup.group_id))
-                id_group = get_group_id.scalar()
-                if id_group:
-                    await session.close()
-                    return id_group
-                else:
-                    return None
+                get_group_id = await session.execute(
+                    select(AdminGroup.group_id)
+                )
+                
+                return get_group_id.scalar()
         except Exception as e:
-            logging.error(f"Ошибка при получении ID группы: {e}")
+            logging.error(f"Ошибка получения ID группы: {e}")
             
             
     @staticmethod
-    async def get_user_message_thread_id(user_tg_id: int, session: AsyncSession = get_async_session()) -> bool:
+    async def get_user_message_thread_id(user_id: int) -> Optional[int]:
         """
-        Получает id чата с пользователем для группы.
+        Получение id чата с пользователем в группе
         """
         try:
             async for session in get_async_session():
-                subquery = select(User.id).where(User.id_tg == user_tg_id).scalar_subquery()
+                subquery = select(User.id).where(User.id_tg == user_id).scalar_subquery()
                 get_user_message_thread_id = await session.execute(select(UserChat.id_topic_chat)
                     .select_from(UserChat)
                     .where(UserChat.user_id == subquery)
                 )
-                message_thread_id = get_user_message_thread_id.scalar()
-                await session.close()
-                return message_thread_id
+                return get_user_message_thread_id.scalar()
         except Exception as e:
-            logging.error(f"Ошибка при получении id чата пользователя в группе: {e}")
+            logging.error(f"Ошибка получения id чата в группе для пользователя с id_tg {user_id}: {e}")
+
     
     @staticmethod
-    async def save_user_message_thread_id(user_tg_id: int, message_thread_id: int, session: AsyncSession = get_async_session()) -> bool:
+    async def save_user_message_thread_id(user_id: int, id_topic_chat: int) -> None:
         """
-        Получает id чата с пользователем для группы.
+        Сохрранение id чата с пользователем в группе
         """
         try:
             async for session in get_async_session():
-                subquery = select(User.id).where(User.id_tg == user_tg_id).scalar_subquery()
+                subquery = select(User.id).where(User.id_tg == user_id).scalar_subquery()
                 await session.execute(
                         insert(UserChat)
-                        .values(user_id=subquery, id_topic_chat=message_thread_id)
+                        .values(user_id=subquery, id_topic_chat=id_topic_chat)
                         )
                 await session.commit()
-                await session.close()
         except Exception as e:
-            logging.error(f"Ошибка при получении id чата пользователя в группе: {e}")
+            logging.error(f"Ошибка сохранения id чата в группе для пользователя с id_tg {user_id}: {e}")
