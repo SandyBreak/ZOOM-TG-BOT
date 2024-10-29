@@ -104,6 +104,10 @@ class UserKeyboards:
             intermediate_date += timedelta(days=1)  # Переходим к следующему дню
         
         # Завершение добавления кнопок
+        if last_day_of_month.strftime('%A') != 'Sunday' and (last_day_of_month-today).days <= 7:
+            for a in range(0, int(today.strftime('%u'))-1):
+                buttons.insert(0, InlineKeyboardButton(text=f'----', callback_data=json.dumps({'key': None})))
+
         if len(buttons) != 7 and len(buttons) != 0:
             for a in range(0, 7 - len(buttons)):
                 buttons.append(InlineKeyboardButton(text="----", callback_data=json.dumps({'key': None})))  # Заполняем пустые кнопки до 7
