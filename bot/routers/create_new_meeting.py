@@ -5,15 +5,17 @@ import logging
 import json
 
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
+from aiogram import Router, F, Bot, suppress
 from aiogram.fsm.context import FSMContext
-from aiogram import Router, F, Bot
 
 from admin.admin_logs import send_log_message
 
-from services.zoom_api.zoom import create_and_get_meeting_link
 from services.postgres.create_meeting_service import CreateMeetingService
 from services.postgres.user_service import UserService
+
+from services.zoom_api.zoom import create_and_get_meeting_link
 
 from models.user_keyboards import  UserKeyboards
 from models.states import CreateMeetingStates
@@ -38,8 +40,8 @@ async def start_create_new_meeting(message: Message, state: FSMContext, bot: Bot
         state (FSMContext): Base class for all FSM storages
         bot (Bot): Bot class
     """
-    if (await state.get_data()).get('message_id'):
-        await bot.delete_message(chat_id=message.chat.id, message_id=(await state.get_data()).get('message_id'))
+    with suppress(TelegramBadRequest):
+        if (delete_message_id := (await state.get_data()).get('message_id')): await bot.delete_message(chat_id=message.chat.id, message_id=delete_message_id)
     await state.clear()
     try:
         
