@@ -217,17 +217,19 @@ async def get_name_create_meeting(message: Message, state: FSMContext, bot: Bot)
     """
     
     load_message = await message.answer("Ваша конференция создается...")
-    meeting_data = await MinorOperations.fill_meeting_data_credits(message.from_user.id, message.text)
-    account = await MinorOperations.fill_account_credits(meeting_data[2])
+    meeting_data, access_code, choosen_zoom = await MinorOperations.fill_meeting_data_credits(message.from_user.id, message.text)
+    account = await MinorOperations.fill_account_credits(choosen_zoom)
     try:
         try:
-            answer = await create_and_get_meeting_link(account, meeting_data[0])
-            message_log = await message.answer(f"{Emojis.SUCCESS} Конференция создана {Emojis.SUCCESS}\n\nПочта аккаунта: {account.name}\nНазвание: {meeting_data[0].topic}\nДата и время начала: {(meeting_data[0].start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data[0].duration} минут\n\nПригласительная ссылка: {answer[1]}\n\nИдентификатор конференции: {answer[2]}\nКод доступа: {meeting_data[1]}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+            short_start_url, join_url, meeting_id = await create_and_get_meeting_link(account, meeting_data)
+            autorecord_flag = Emojis.SUCCESS if meeting_data.auto_recording == 'cloud' else Emojis.FAIL
+            
+            message_log = await message.answer(f"{Emojis.SUCCESS} Конференция создана {Emojis.SUCCESS}\n\nПочта аккаунта: {account.name}\nНазвание: {meeting_data.topic}\nДата и время начала: {(meeting_data.start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data.duration} минут\n\nАвтоматическая запись: {autorecord_flag}\n\nПригласительная ссылка: {join_url}\n\n🆔 конференции: {meeting_id}\nКод доступа: {access_code}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
             
             await bot.delete_message(chat_id=message.chat.id, message_id=(await state.get_data()).get('message_id'))
             await bot.delete_message(chat_id=message.chat.id, message_id=load_message.message_id)
             
-            await CreateMeetingService.save_created_conference(message.from_user.id, meeting_data[0], account.name)
+            await CreateMeetingService.save_created_conference(message.from_user.id, meeting_data, account.name)
             await UserService.update_number_created_conferences(message.from_user.id)
         except Exception as e:
             logging.error(f"Error during create meeting: {e}")
