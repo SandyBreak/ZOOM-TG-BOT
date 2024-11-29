@@ -6,7 +6,9 @@ import json
 
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
+
 from aiogram import Router, F, Bot, suppress
 from aiogram.fsm.context import FSMContext
 
@@ -224,7 +226,7 @@ async def get_name_create_meeting(message: Message, state: FSMContext, bot: Bot)
             short_start_url, join_url, meeting_id = await create_and_get_meeting_link(account, meeting_data)
             autorecord_flag = Emojis.SUCCESS if meeting_data.auto_recording == 'cloud' else Emojis.FAIL
             
-            message_log = await message.answer(f"{Emojis.SUCCESS} Конференция создана {Emojis.SUCCESS}\n\nПочта аккаунта: {account.name}\nНазвание: {meeting_data.topic}\nДата и время начала: {(meeting_data.start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\nПродолжительность: {meeting_data.duration} минут\n\nАвтоматическая запись: {autorecord_flag}\n\nПригласительная ссылка: {join_url}\n\n🆔 конференции: {meeting_id}\nКод доступа: {access_code}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+            message_log = await message.answer(f"{Emojis.SUCCESS} <b>Конференция создана</b> {Emojis.SUCCESS}\n\n<b>Почта аккаунта:</b> {account.name}\n<b>Название:</b> {meeting_data.topic}\n<b>Дата и время начала:</b> {(meeting_data.start_time + timedelta(hours=3)).strftime('%d.%m.%Y %H:%M')}\n<b>Продолжительность:</b> {meeting_data.duration} минут\n\n<b>Автоматическая запись:</b> {autorecord_flag}\n\n<b>Пригласительная ссылка:</b> {join_url}\n\n🆔 <b>конференции:</b> {meeting_id}\n<b>Код доступа:</b> {access_code}", reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True, parse_mode=ParseMode.HTML)
             
             await bot.delete_message(chat_id=message.chat.id, message_id=(await state.get_data()).get('message_id'))
             await bot.delete_message(chat_id=message.chat.id, message_id=load_message.message_id)
